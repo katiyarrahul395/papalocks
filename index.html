@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keithlocks AI</title>
+<style>
+:root{--bg:#08080c;--card:#111118;--line:#252532;--text:#f5f5f7;--muted:#9b9ba8;--accent:#9b6cff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#24143f 0,#08080c 42%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.app{max-width:850px;margin:auto;min-height:100vh;display:flex;flex-direction:column}.top{padding:18px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:#08080cee;backdrop-filter:blur(14px);z-index:2}
+.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#a36cff,#5d39ff);font-weight:900;font-size:20px}.title{font-weight:800}.status{font-size:12px;color:#8ee6ad}.new{margin-left:auto;border:1px solid var(--line);background:#15151d;color:#fff;border-radius:10px;padding:9px 12px}
+main{flex:1;padding:28px 16px 110px}.hero{text-align:center;margin:25px auto 28px}.hero h1{font-size:clamp(30px,8vw,48px);margin:0 0 9px}.hero p{color:var(--muted);margin:0}.chips{display:flex;gap:8px;overflow:auto;padding:2px 0 18px}.chip{white-space:nowrap;border:1px solid var(--line);background:#111119;color:#ddd;border-radius:999px;padding:9px 12px}
+.chat{display:flex;flex-direction:column;gap:14px}.row{display:flex}.row.user{justify-content:flex-end}.bubble{max-width:82%;padding:12px 15px;border-radius:18px;line-height:1.45;white-space:pre-wrap}.ai .bubble{background:#14141c;border:1px solid var(--line)}.user .bubble{background:linear-gradient(135deg,#8051e8,#5e43c9)}.typing{display:none;color:var(--muted);font-size:13px;margin:8px 3px}
+.composer{position:fixed;bottom:0;left:0;right:0;padding:12px max(16px,calc((100vw - 850px)/2 + 16px));background:#08080cf2;backdrop-filter:blur(14px);border-top:1px solid var(--line)}form{display:flex;gap:8px}.input{flex:1;min-width:0;background:#13131b;border:1px solid var(--line);color:#fff;border-radius:15px;padding:13px 14px;outline:none}.send{border:0;border-radius:15px;padding:0 18px;background:#fff;color:#111;font-weight:800}
+.note{text-align:center;color:#666878;font-size:11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="logo">K</div><div><div class="title">Keithlocks AI</div><div class="status">● online · unofficial AI community character</div></div><button class="new" id="new">New chat</button></header>
+<main>
+<section class="hero"><h1>Yo, what’s good bro?</h1><p>Chat with a fan-made Keithlocks-style AI built from community lore.</p></section>
+<div class="chips">
+<button class="chip">Good morning Keithlocks</button><button class="chip">What do you think about Rahul?</button><button class="chip">Who is the Baccarat monk?</button><button class="chip">Why do you hate Skinnylocks?</button>
+</div>
+<div id="chat" class="chat"></div><div id="typing" class="typing">Keithlocks AI is typing…</div>
+</main>
+<div class="composer"><form id="form"><input id="input" class="input" autocomplete="off" placeholder="Say something bro…"><button class="send">Send</button></form><div class="note">Unofficial fan project • AI-generated responses • No affiliation with Keithlocks</div></div>
+</div>
+<script>
+const chat=document.querySelector('#chat'), input=document.querySelector('#input'), typing=document.querySelector('#typing');
+let history=[];
+function add(text,who){const r=document.createElement('div');r.className='row '+who;const b=document.createElement('div');b.className='bubble';b.textContent=text;r.appendChild(b);chat.appendChild(r);window.scrollTo(0,document.body.scrollHeight)}
+function welcome(){add("Yo bro 😎 What’s good? Ask me anything — just don’t start asking for a tip after I lost everything 😂",'ai')}
+welcome();
+async function send(text){
+ text=(text||input.value).trim(); if(!text)return; input.value=''; add(text,'user'); history.push({role:'user',content:text}); typing.style.display='block';
+ try{
+   const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-16)})});
+   const data=await res.json(); if(!res.ok) throw new Error(data.error||'Request failed');
+   add(data.reply,'ai'); history.push({role:'assistant',content:data.reply});
+ }catch(e){add("Bro 😭 something went wrong on the backend. Check your Netlify environment variable and function deployment.",'ai')}
+ finally{typing.style.display='none'}
+}
+document.querySelector('#form').addEventListener('submit',e=>{e.preventDefault();send()});
+document.querySelectorAll('.chip').forEach(x=>x.onclick=()=>send(x.textContent));
+document.querySelector('#new').onclick=()=>{chat.innerHTML='';history=[];welcome()};
+</script>
+</body>
+</html>
