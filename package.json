@@ -1,1 +1,7 @@
-{"name":"keithlocks-ai","private":true,"version":"1.0.0"}
+{
+  "name": "keithlocks-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unofficial Keithlocks AI fan project for Netlify",
+  "engines": {"node": ">=18"}
+}
